@@ -165,11 +165,12 @@ if label_style == 'level_self_defined' or label_style == 'binary_level':
         blob_paths = ['']+[f for f in DT.checkBlobPaths() if f[-3:]=='txt' ]
         txt_prompt = st.selectbox("Choose a txt file",blob_paths)
         try:
-            txt_obj = DT.downloadFileFromBlobStorage(txt_prompt,PROMPT_PATH+txt_prompt)
-            with open(PROMPT_PATH+txt_prompt,'r',encoding='utf-8') as path:
-                text = path.read()
-            st.write(f'prompt txt:{txt_prompt}')
-            st.write(text , encoding='utf-8')
+            if txt_prompt != '':
+                txt_obj = DT.downloadFileFromBlobStorage(txt_prompt,PROMPT_PATH+txt_prompt)
+                with open(PROMPT_PATH+txt_prompt,'r',encoding='utf-8') as path:
+                    text = path.read()
+                st.write(f'prompt txt:{txt_prompt}')
+                st.write(text , encoding='utf-8')
         except:
             pass
 
