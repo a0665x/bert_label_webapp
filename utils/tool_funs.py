@@ -3,7 +3,8 @@ import json
 from azure.core.pipeline.policies import HTTPPolicy
 from azure.core.pipeline import Pipeline
 from azure.core.pipeline.transport import RequestsTransport
-
+from azure.storage.blob import ContainerClient
+import jieba
 import pandas as pd
 
 # import logging
@@ -50,7 +51,7 @@ class BlobDataTransaction:
 
     def downloadFileFromBlobStorage(self,file_name, local_path):
         # Create the BlobServiceClient object which will be used to create a container client
-        blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+        blob_service_client = BlobServiceClient.from_connection_string(self.connection_string)
 
         # Create a blob client using the container name and blob name
         blob_client = blob_service_client.get_blob_client(container=self.container_name, blob=file_name)
@@ -72,6 +73,9 @@ class BlobDataTransaction:
             # Convert the stream to a JSON object
             obj = json.loads(blob_stream)
         elif file_name.endswith('.csv'):
+            # Convert the stream to a string
+            obj = blob_stream.decode()
+        elif file_name[-3:]=='txt':
             # Convert the stream to a string
             obj = blob_stream.decode()
         else:
@@ -108,6 +112,22 @@ class BlobDataTransaction:
             print('file already has been removed')
             raise
 
+    def checkBlobPaths(self):
+        # Create a ContainerClient using the container name and connection string
+        container_client = ContainerClient.from_connection_string(self.connection_string, self.container_name)
+
+        # List all the blobs in the container
+        blobs = container_client.list_blobs()
+
+        # Extract the paths of all the blobs and return them as a list of strings
+        return [blob.name for blob in blobs]
+
+def JiebaCutWordCloud(sentence):
+    seg_list = list(jieba.cut(sentence,cut_all=False))
+    seg_list
+
+
+
 # def main(req: func.HttpRequest) -> func.HttpResponse:
 #     logging.info('Python HTTP trigger function processed a request.')
 #
@@ -135,12 +155,15 @@ class BlobDataTransaction:
 if __name__ == "__main__":
     storage_account_key = "8O4CcWidAmAv+sFdraQ6VTsANHgiutP2mlbWBex41vPyxKgkLVfE4W71GUVsPOqcKWo76AmhkG1a+AStfEUeFA=="
     storage_account_name = "nlplabel"
-    connection_string = "DefaultEndpointsProtocol=https;AccountName=nlplabel;AccountKey=8O4CcWidAmAv+sFdraQ6VTsANHgiutP2mlbWBex41vPyxKgkLVfE4W71GUVsPOqcKWo76AmhkG1a+AStfEUeFA==;EndpointSuffix=core.windows.net"
+    connection_string = f"DefaultEndpointsProtocol=https;AccountName={storage_account_name};AccountKey={storage_account_key};EndpointSuffix=core.windows.net"
     container_name = "labelfile"
 
     DT = BlobDataTransaction(storage_account_key , storage_account_name , connection_string , container_name)
     # ===file path upload===:
     # DT.uploadToBlobStorage('./prompt_txt/hotel_article_1.txt', 'hotel_article_1.txt')
+    # ===checkpaths on blob===:
+    paths = DT.checkBlobPaths()
+    print('paths:',paths)
     # ===data Object upload===:
     data = dict({'Key':'Value'})
     DT.uploadJsonObjToBlobStorage(data , 'allen_label.json')
@@ -154,3 +177,5 @@ if __name__ == "__main__":
     DT.CheckBlobFlieExists('allen_label.json')
     # # ===remove data from blob===:
     DT.removeDataFromBlob('allen_label.json')
+
+    # JiebaCut('今天因為漏水,讓我很不高興')
