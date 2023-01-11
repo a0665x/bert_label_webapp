@@ -122,9 +122,9 @@ if label_style == 'level_self_defined' or label_style == 'binary_level':
             # submitted = st.button("💌 Submit",on_click=clear_form)
             submitted = st.form_submit_button("💌 Submit")
             if submitted:
-                if os.path.exists(SAVE_PATH + f"{USER}_NLP_dataset.csv")==False:
+                if os.path.exists(SAVE_PATH + f"{USER}_NLP_dataset({label_style}).csv")==False:
                     try:
-                        DT.downloadFileFromBlobStorage(f"{USER}_NLP_dataset.csv" , SAVE_PATH + f"{USER}_NLP_dataset({label_style}).csv")
+                        DT.downloadFileFromBlobStorage(f"{USER}_NLP_dataset({label_style}).csv" , SAVE_PATH + f"{USER}_NLP_dataset({label_style}).csv")
                     except:
                         pass
                 st.write("previous saved:\n" + f'location_label:{slider_val} , context:{nlp_context}')
