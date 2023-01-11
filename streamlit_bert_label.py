@@ -60,29 +60,29 @@ if label_style == 'binary_level':
     assign_label   = st.sidebar.selectbox('🏷️ Assign the context label',['0','1'])
 if label_style == 'level_self_defined':
     label_num = st.sidebar.number_input('Setting total number of labels:',min_value = 0 , max_value=99 , step=1 )
-    assign_label = st.sidebar.selectbox('Choose the designated level number.: ', range(2 if label_style == 'binary_level' else label_num if label_style == 'level_self_defined' else 2))
+    assign_label = st.sidebar.selectbox('Choose the designated level number: ', range(2 if label_style == 'binary_level' else label_num if label_style == 'level_self_defined' else 2))
 if label_style == 'level_self_defined' or label_style == 'binary_level':
     label_descript = st.sidebar.text_area('Write the context description')
-    file_check = os.path.exists(SAVE_PATH + f"{USER}_label.json")
-    # st.sidebar.write(f'path_check:{file_check} ||'+SAVE_PATH + f"{USER}_label.json")
+    file_check = os.path.exists(SAVE_PATH + f"{USER}_label({label_style}).json")
+    # st.sidebar.write(f'path_check:{file_check} ||'+SAVE_PATH + f"{USER}_label({label_style}).json")
     if  file_check == False:
-        with open(SAVE_PATH + f"{USER}_label.json", "w",encoding='utf-8') as outfile:
+        with open(SAVE_PATH + f"{USER}_label({label_style}).json", "w",encoding='utf-8') as outfile:
             json.dump({'label_style': label_style}, outfile)
     submitted = st.sidebar.button("📥 upload_label_description")
     if submitted:
         st.write(f"label:{assign_label}:{label_descript}")
-        with open(SAVE_PATH + f"{USER}_label.json", "r",encoding='utf-8') as file:
+        with open(SAVE_PATH + f"{USER}_label({label_style}).json", "r",encoding='utf-8') as file:
             label_json = json.load(file)
             label_json[assign_label] = label_descript
-        with open(SAVE_PATH + f"{USER}_label.json", "w",encoding='utf-8') as outfile:
+        with open(SAVE_PATH + f"{USER}_label({label_style}).json", "w",encoding='utf-8') as outfile:
             json.dump(label_json, outfile)
-        st.sidebar.write('json path:'+SAVE_PATH +f"{USER}_label.json")
+        st.sidebar.write('json path:'+SAVE_PATH +f"{USER}_label({label_style}).json")
 
-    with open(SAVE_PATH +f"{USER}_label.json", "r", encoding='utf-8') as file:
+    with open(SAVE_PATH +f"{USER}_label({label_style}).json", "r", encoding='utf-8') as file:
         label_json = json.load(file)
     st.sidebar.json(label_json)
     if st.sidebar.button('upload_json_to_Azure'):
-        DT.uploadJsonObjToBlobStorage(label_json , f'{USER}_label.json')
+        DT.uploadJsonObjToBlobStorage(label_json , f'{USER}_label({label_style}).json')
 
     st.sidebar.write('<style>div.row-widget.stRadio > div{flex-direction:row;justify-content: center;} </style>',
              unsafe_allow_html=True)
@@ -92,8 +92,8 @@ if label_style == 'level_self_defined' or label_style == 'binary_level':
 
     if st.sidebar.button('🧹 Reset_json_kernel') and cancel == 'Yes':
         try:
-            DT.removeDataFromBlob(SAVE_PATH + f"{USER}_label.json")
-            os.remove(SAVE_PATH + f"{USER}_label.json")
+            DT.removeDataFromBlob(SAVE_PATH + f"{USER}_label({label_style}).json")
+            os.remove(SAVE_PATH + f"{USER}_label({label_style}).json")
         except:
             st.sidebar.write('There is no data in the local or cloud storage')
             pass
@@ -109,7 +109,7 @@ if label_style == 'level_self_defined' or label_style == 'binary_level':
 
         slider_val = st.radio("🏷️ Label:",range(2 if label_style == 'binary_level' else label_num if  label_style == 'level_self_defined' else 0))
         try:
-            with open(SAVE_PATH + f"{USER}_label.json", "r",encoding='utf-8') as file:
+            with open(SAVE_PATH + f"{USER}_label({label_style}).json", "r",encoding='utf-8') as file:
                 label_json = json.load(file)
 
             show_discription = label_json[str(slider_val)]
@@ -124,17 +124,17 @@ if label_style == 'level_self_defined' or label_style == 'binary_level':
             if submitted:
                 if os.path.exists(SAVE_PATH + f"{USER}_NLP_dataset.csv")==False:
                     try:
-                        DT.downloadFileFromBlobStorage(f"{USER}_NLP_dataset.csv" , SAVE_PATH + f"{USER}_NLP_dataset.csv")
+                        DT.downloadFileFromBlobStorage(f"{USER}_NLP_dataset.csv" , SAVE_PATH + f"{USER}_NLP_dataset({label_style}).csv")
                     except:
                         pass
                 st.write("previous saved:\n" + f'location_label:{slider_val} , context:{nlp_context}')
-                with open(SAVE_PATH + f"{USER}_NLP_dataset.csv", "a+",encoding='utf-8') as csv_file:
+                with open(SAVE_PATH + f"{USER}_NLP_dataset({label_style}).csv", "a+",encoding='utf-8') as csv_file:
                     csv_file.write(str(slider_val)+','+nlp_context+'\n')
-                st.write("csv_path:"+SAVE_PATH +f"{USER}_NLP_dataset.csv")
+                st.write("csv_path:"+SAVE_PATH +f"{USER}_NLP_dataset({label_style}).csv")
         st.write("""***""")
 
-        if os.path.exists(SAVE_PATH + f"{USER}_NLP_dataset.csv"):
-            with open(SAVE_PATH + f"{USER}_NLP_dataset.csv", "r",encoding= 'utf-8') as csv_file:
+        if os.path.exists(SAVE_PATH + f"{USER}_NLP_dataset({label_style}).csv"):
+            with open(SAVE_PATH + f"{USER}_NLP_dataset({label_style}).csv", "r",encoding= 'utf-8') as csv_file:
                 lines = csv_file.readlines()[-5:]
             df = pd.DataFrame(columns = ['label','context'])
             for line in lines:
@@ -150,14 +150,14 @@ if label_style == 'level_self_defined' or label_style == 'binary_level':
                         resizeable=True)
 
         if st.button('csv_to_Azure'):
-            DT.uploadToBlobStorage(SAVE_PATH + f"{USER}_NLP_dataset.csv" ,  f"{USER}_NLP_dataset.csv")
+            DT.uploadToBlobStorage(SAVE_PATH + f"{USER}_NLP_dataset({label_style}).csv" ,  f"{USER}_NLP_dataset({label_style}).csv")
         st.write("""***""")
 
         cancel_csv = st.radio('are you sure to cancel all csv file?[Y/N]:', ('No', 'Yes'))
         if st.button('🧹 reset_csv_kernel') and cancel_csv == 'Yes':
             try:
-                DT.removeDataFromBlob(SAVE_PATH + f"{USER}_NLP_dataset.csv")
-                os.remove(SAVE_PATH + f"{USER}_NLP_dataset.csv")
+                DT.removeDataFromBlob(SAVE_PATH + f"{USER}_NLP_dataset({label_style}).csv")
+                os.remove(SAVE_PATH + f"{USER}_NLP_dataset({label_style}).csv")
             except:
                 df = pd.DataFrame(columns=['label', 'context'])
                 st.write('The CSV file has already been cancelled.')
@@ -334,7 +334,7 @@ if label_style == 'action-task_self_defined':
 if label_style == 'context_prompt':
     label_num = st.sidebar.number_input('setting total number of action:',min_value = 0 , max_value=99 , step=1)
     label_descript = st.sidebar.text_area('write the context description')
-    st.header('😵 Allen_Huang is still designing the details of the labeling function, or you can buy him a coffee to console him 🔨🔨')
+    st.header('😵 Allen_Huang is still designing the details of this labeling function, or you can buy him a coffee to console him 🔨🔨')
 
     pass
 
