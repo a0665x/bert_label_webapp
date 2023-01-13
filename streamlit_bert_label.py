@@ -92,14 +92,11 @@ if label_style == 'level_self_defined' or label_style == 'binary_level':
 
     if st.sidebar.button('🧹 Reset_json_kernel') and cancel == 'Yes':
         try:
-            DT.removeDataFromBlob(SAVE_PATH + f"{USER}_label({label_style}).json")
-        except:
-            st.sidebar.write('There is no data on cloud storage')
-            pass
-        try:
+            DT.removeDataFromBlob(f"{USER}_label({label_style}).json")
             os.remove(SAVE_PATH + f"{USER}_label({label_style}).json")
         except:
-            st.sidebar.write('There is no data in the local')
+
+            st.sidebar.write('There is no data on cloud storage')
             pass
 
     col1, col2 = st.columns([7,3],gap="large")
@@ -160,7 +157,7 @@ if label_style == 'level_self_defined' or label_style == 'binary_level':
         cancel_csv = st.radio('are you sure to cancel all csv file?[Y/N]:', ('No', 'Yes'))
         if st.button('🧹 reset_csv_kernel') and cancel_csv == 'Yes':
             try:
-                DT.removeDataFromBlob(SAVE_PATH + f"{USER}_NLP_dataset({label_style}).csv")
+                DT.removeDataFromBlob(f"{USER}_NLP_dataset({label_style}).csv")
                 os.remove(SAVE_PATH + f"{USER}_NLP_dataset({label_style}).csv")
             except:
                 df = pd.DataFrame(columns=['label', 'context'])
