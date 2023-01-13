@@ -93,9 +93,13 @@ if label_style == 'level_self_defined' or label_style == 'binary_level':
     if st.sidebar.button('🧹 Reset_json_kernel') and cancel == 'Yes':
         try:
             DT.removeDataFromBlob(SAVE_PATH + f"{USER}_label({label_style}).json")
+        except:
+            st.sidebar.write('There is no data on cloud storage')
+            pass
+        try:
             os.remove(SAVE_PATH + f"{USER}_label({label_style}).json")
         except:
-            st.sidebar.write('There is no data in the local or cloud storage')
+            st.sidebar.write('There is no data in the local')
             pass
 
     col1, col2 = st.columns([7,3],gap="large")
